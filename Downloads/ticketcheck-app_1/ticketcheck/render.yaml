@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: ticketcheck-backend
+    env: node
+    plan: starter
+    branch: main
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    autoDeploy: true

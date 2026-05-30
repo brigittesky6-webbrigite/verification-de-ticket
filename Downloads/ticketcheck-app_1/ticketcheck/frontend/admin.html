@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TicketCheck — Tableau de bord administrateur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font-family: 'DM Sans', sans-serif; background: #F3F7FB; color: #1F2430; }
+header { background: linear-gradient(135deg, #0A2A51, #194E8A); color: #fff; padding: 22px 24px; }
+.header-inner { max-width: 1120px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.header-inner h1 { font-size: 22px; margin: 0; }
+.header-inner a { color: #E6F2FF; text-decoration: none; font-weight: 500; }
+.container { max-width: 1120px; margin: 0 auto; padding: 24px; }
+.panel { background: #fff; border-radius: 24px; box-shadow: 0 24px 56px rgba(15, 34, 66, 0.08); padding: 28px; margin-bottom: 22px; }
+.panel h2 { margin: 0 0 6px; font-size: 20px; }
+.panel p { color: #556175; line-height: 1.7; }
+.button { display: inline-flex; align-items: center; justify-content: center; border: none; border-radius: 14px; padding: 12px 18px; cursor: pointer; font-weight: 700; font-size: 14px; transition: transform .15s, filter .15s; }
+.button:hover { filter: brightness(1.05); transform: translateY(-1px); }
+.button-primary { background: #0A2A51; color: #fff; }
+.button-secondary { background: #E9EEF7; color: #0A2A51; }
+.field-group { display: grid; gap: 10px; margin-top: 18px; }
+.field-group label { font-size: 13px; color: #5C667C; }
+.field-group input { width: 100%; padding: 14px 16px; border: 1px solid #DDE2EA; border-radius: 14px; font-size: 15px; color: #1F2430; background: #F8FBFF; }
+.hidden { display: none; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+th, td { padding: 16px 14px; text-align: left; vertical-align: middle; }
+th { color: #7F8A9D; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+td { border-top: 1px solid #F0F3F8; font-size: 14px; color: #2B3345; }
+.status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.status-pending { background: #FFF7E5; color: #8A611D; }
+.status-approved { background: #E7F6EA; color: #227248; }
+.status-rejected { background: #FBEAEA; color: #A02A2A; }
+.cell-code { font-family: 'DM Mono', monospace; letter-spacing: 1px; }
+.action-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+.action-buttons button { min-width: 108px; }
+.preview-link { color: #0A2A51; text-decoration: none; font-weight: 600; }
+footer { text-align: center; padding: 18px 24px; color: #8D95A4; font-size: 13px; }
+#messageBox { border-radius: 16px; padding: 18px 20px; margin: 16px 0 0; display: none; }
+#messageBox.success { background: #E7F6EA; color: #1B4F2F; }
+#messageBox.error { background: #FBEAEA; color: #7F2525; }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div>
+      <h1>TicketCheck Admin</h1>
+      <p style="margin: 6px 0 0; color: rgba(230,242,255,.85); font-size: 14px;">Traitez les demandes de validation de tickets en quelques clics.</p>
+    </div>
+    <a href="/">Retour au site client</a>
+  </div>
+</header>
+<main class="container">
+  <section id="loginSection" class="panel">
+    <h2>Connexion administrateur</h2>
+    <p>Entrez votre clé secrète pour afficher les demandes de validation.</p>
+    <div class="field-group">
+      <label for="adminSecret">Clé admin</label>
+      <input id="adminSecret" type="password" placeholder="xxxxxxxxxx" autocomplete="current-password" />
+    </div>
+    <button class="button button-primary" id="loginBtn">Se connecter</button>
+    <div id="loginError" style="margin-top:14px;color:#A02A2A;display:none;font-size:14px;"></div>
+  </section>
+
+  <section id="dashboardSection" class="hidden">
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div>
+          <h2>Demandes de vérification</h2>
+          <p>Le tableau affiche les dernières demandes reçues. Cliquez sur un bouton pour valider ou rejeter.</p>
+        </div>
+        <button class="button button-secondary" id="logoutBtn">Se déconnecter</button>
+      </div>
+
+      <div class="field-group" style="margin-top:24px;">
+        <label for="filterInput">Filtrer par email, référence ou type</label>
+        <input id="filterInput" type="text" placeholder="Rechercher..." />
+      </div>
+      <div id="messageBox"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Réf</th>
+              <th>Client</th>
+              <th>Email</th>
+              <th>Type</th>
+              <th>Code</th>
+              <th>Image</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="requestsTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>© 2024 TicketCheck — Administration sécurisée des tickets.</footer>
+
+<script>
+const loginSection = document.getElementById('loginSection');
+const dashboardSection = document.getElementById('dashboardSection');
+const loginError = document.getElementById('loginError');
+const messageBox = document.getElementById('messageBox');
+const filterInput = document.getElementById('filterInput');
+const requestsTable = document.getElementById('requestsTable');
+const adminSecretInput = document.getElementById('adminSecret');
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+let adminSecret = localStorage.getItem('ticketcheckAdminSecret');
+let requests = [];
+
+function showMessage(text, type = 'success') {
+  messageBox.textContent = text;
+  messageBox.className = type === 'error' ? 'error' : 'success';
+  messageBox.style.display = 'block';
+  setTimeout(() => { messageBox.style.display = 'none'; }, 7000);
+}
+
+function setLoggedIn(enabled) {
+  if (enabled) {
+    loginSection.classList.add('hidden');
+    dashboardSection.classList.remove('hidden');
+    loadRequests();
+  } else {
+    loginSection.classList.remove('hidden');
+    dashboardSection.classList.add('hidden');
+    localStorage.removeItem('ticketcheckAdminSecret');
+    adminSecret = null;
+  }
+}
+
+async function loadRequests() {
+  try {
+    const response = await fetch('/api/admin/requests', {
+      headers: { 'x-admin-secret': adminSecret },
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Impossible de charger les demandes');
+    requests = data;
+    renderRequests();
+  } catch (error) {
+    showMessage(error.message, 'error');
+    setLoggedIn(false);
+  }
+}
+
+function renderRequests() {
+  const filter = filterInput.value.trim().toLowerCase();
+  const rows = requests.filter(item => {
+    return [item.short_ref, item.client_name, item.client_email, item.ticket_type, item.ticket_code]
+      .some(value => String(value || '').toLowerCase().includes(filter));
+  });
+
+  if (!rows.length) {
+    requestsTable.innerHTML = '<tr><td colspan="9" style="padding:24px;text-align:center;color:#7A869A;">Aucune demande correspondant à la recherche.</td></tr>';
+    return;
+  }
+
+  requestsTable.innerHTML = rows.map(item => `
+    <tr>
+      <td><strong>${item.short_ref}</strong></td>
+      <td>${item.client_name || '—'}</td>
+      <td>${item.client_email}</td>
+      <td>${item.ticket_type}</td>
+      <td class="cell-code">${item.ticket_code}</td>
+      <td>${item.image_path ? `<a class="preview-link" href="${item.image_path}" target="_blank">Voir</a>` : 'Aucun'}</td>
+      <td><span class="status-pill status-${item.status}">${item.status.replace('pending','En attente').replace('approved','Validé').replace('rejected','Rejeté')}</span></td>
+      <td>${new Date(item.created_at).toLocaleString('fr-FR')}</td>
+      <td class="action-buttons">
+        ${item.status === 'pending' ? `
+          <button class="button button-primary" onclick="handleAction('${item.id}','approve')">Valider</button>
+          <button class="button button-secondary" onclick="handleAction('${item.id}','reject')">Rejeter</button>
+        ` : '<span style="font-size:13px;color:#6B7280;">Traité</span>'}
+      </td>
+    </tr>
+  `).join('');
+}
+
+async function handleAction(id, action) {
+  const note = prompt(action === 'approve' ? 'Note admin (optionnel)' : 'Motif de refus (optionnel)');
+  const amount = action === 'approve' ? prompt('Montant validé (ex: 20,00 €)') : '';
+  try {
+    const response = await fetch(`/api/admin/action/${id}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-secret': adminSecret,
+      },
+      body: JSON.stringify({ action, amount, note }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Impossible de mettre à jour la demande');
+    showMessage(`Demande ${data.reference} ${action === 'approve' ? 'validée' : 'rejetée'} avec succès.`);
+    await loadRequests();
+  } catch (error) {
+    showMessage(error.message, 'error');
+  }
+}
+
+loginBtn.addEventListener('click', () => {
+  const value = adminSecretInput.value.trim();
+  if (!value) return;
+  adminSecret = value;
+  localStorage.setItem('ticketcheckAdminSecret', value);
+  setLoggedIn(true);
+});
+
+logoutBtn.addEventListener('click', () => setLoggedIn(false));
+filterInput.addEventListener('input', renderRequests);
+
+if (adminSecret) {
+  adminSecretInput.value = adminSecret;
+  setLoggedIn(true);
+}
+</script>
+</body>
+</html>
